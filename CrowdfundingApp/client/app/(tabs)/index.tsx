@@ -243,21 +243,21 @@ function ConnectedSection() {
 							</ThemedText>
 						)}
 					</ThemedText>
-					<ThemedView style={{ height: 12 }} />
+					{/* <ThemedView style={{ height: 12 }} />
 					{connectedWallets.length > 1 && (
 						<ThemedButton
 							variant="secondary"
 							title="Switch Wallet"
 							onPress={switchWallet}
 						/>
-					)}
+					)} */}
 
 			{/* navigate to the lobby page */}
 					<ThemedButton
 						title="Sign message"
 						variant="secondary"
 						onPress={async () => {
-						navigation.navigate({ name: '(tabs)/lobby', key: '(tabs)/lobby' });
+						navigation.navigate('(tabs)/lobby');
 						}}
 					/>
 					<ThemedButton

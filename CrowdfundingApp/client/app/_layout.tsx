@@ -13,6 +13,7 @@ import { ThirdwebProvider } from "thirdweb/react";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import HomeScreen from "./(tabs)";
 import Lobby from "./(tabs)/lobby";
+import SingingZone from "./(tabs)/singingZone";
 import NotFoundScreen from "./+not-found";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -39,7 +40,8 @@ export default function RootLayout() {
 			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
 				<Stack.Navigator>
 					<Stack.Screen name="(tabs)/index" component={HomeScreen} options={{ headerShown: false }} />
-					<Stack.Screen name="(tabs)/lobby" component={Lobby} options={{ headerShown: false }} />
+					<Stack.Screen name="(tabs)/lobby" component={Lobby} />
+					<Stack.Screen name="(tabs)/singingZone" component={SingingZone} options={{ headerShown: false }}/>
 					<Stack.Screen name="+not-found" component={NotFoundScreen} />
 				</Stack.Navigator>
 			</ThemeProvider>
