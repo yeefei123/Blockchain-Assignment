@@ -1,87 +1,78 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import "@thirdweb-dev/contracts/base/ERC20Vote.sol";
+// Import KTY token contract ABI
+import "./KTY.sol"; // Assuming KTYToken.sol contains the KTY token contract code and ABI
 
-contract Crowdfunding is ERC20Vote {
-    struct Proposal {
-        uint256 id;
-        address creator;
+contract Crowdfunding {
+    struct Campaign {
+        address owner;
+        string title;
         string description;
-        uint256 votingDeadline;
-        bool executed;
-        uint256 yesVotes;
-        uint256 noVotes;
-        mapping(address => bool) voted;
+        uint256 target;
+        uint256 deadline;
+        uint256 amountCollected;
+        string images;
+        address[] donators;
+        uint256[] donations;
     }
 
-    uint256 public proposalCount;
-    mapping(uint256 => Proposal) public proposals;
-    mapping(uint256 => mapping(address => bool)) public voted;
+    mapping(uint256 => Campaign) public campaigns;
+    uint256 public numberOfCampaigns = 0;
 
-    constructor(
-        address _defaultAdmin,
-        string memory _name,
-        string memory _symbol
-    )
-        ERC20Vote(
-            _defaultAdmin,
-            _name,
-            _symbol
-        )
-    {}
+    // Address of KTY token contract
+    address public ktyTokenAddress;
+    KTYToken public ktyToken; // Instance of KTYToken contract
 
-    function createProposal(string memory _description, uint256 _votingPeriodInDays) external {
-        require(_votingPeriodInDays > 0, "Voting period must be greater than zero");
-        uint256 proposalId = proposalCount++;
-        uint256 votingDeadline = block.timestamp + (_votingPeriodInDays * 1 days);
-
-        proposals[proposalId] = Proposal({
-            id: proposalId,
-            creator: msg.sender,
-            description: _description,
-            votingDeadline: votingDeadline,
-            executed: false,
-            yesVotes: 0,
-            noVotes: 0
-        });
-
-        emit ProposalCreated(proposalId, msg.sender, _description, votingDeadline);
+    constructor(address _ktyTokenAddress) {
+        ktyTokenAddress = _ktyTokenAddress;
+        ktyToken = KTYToken(_ktyTokenAddress);
     }
 
-    function vote(uint256 _proposalId, bool _supportsProposal) external {
-        Proposal storage proposal = proposals[_proposalId];
-        require(!proposal.executed, "Proposal already executed");
-        require(block.timestamp <= proposal.votingDeadline, "Voting period has ended");
-        require(!proposal.voted[msg.sender], "Already voted");
+    function createCampaign(address _owner, string memory _title, string memory _description, uint256 _target, uint256 _deadline, string memory _images) public returns (uint256) {
+        Campaign storage campaign = campaigns[numberOfCampaigns];
+        require(_deadline > block.timestamp, "The deadline should be a date in the future.");
+        
+        campaign.owner = _owner;
+        campaign.title = _title;
+        campaign.description = _description;
+        campaign.target = _target;
+        campaign.deadline = _deadline;
+        campaign.amountCollected = 0;
+        campaign.images = _images;
+        numberOfCampaigns++;
+        
+        return numberOfCampaigns - 1;
+    }
 
-        if (_supportsProposal) {
-            proposal.yesVotes++;
-        } else {
-            proposal.noVotes++;
+    function donateToCampaign(uint256 _id, uint256 _amount) public {
+        Campaign storage campaign = campaigns[_id];
+        
+        // Transfer KTY tokens from sender to this contract
+        require(ktyToken.transferFrom(msg.sender, address(this), _amount), "Token transfer failed");
+
+        campaign.donators.push(msg.sender);
+        campaign.donations.push(_amount);
+        campaign.amountCollected += _amount;
+    }
+
+    function getDonators(uint256 _id) public view returns (address[] memory, uint256[] memory) {
+        return (campaigns[_id].donators, campaigns[_id].donations);
+    }
+
+    function getCampaigns() public view returns (Campaign[] memory) {
+        Campaign[] memory allCampaigns = new Campaign[](numberOfCampaigns);
+
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
+            Campaign storage item = campaigns[i];
+            allCampaigns[i] = item;
         }
 
-        proposal.voted[msg.sender] = true;
-        emit VoteCasted(_proposalId, msg.sender, _supportsProposal);
+        return allCampaigns;
     }
 
-    function executeProposal(uint256 _proposalId) external {
-        Proposal storage proposal = proposals[_proposalId];
-        require(!proposal.executed, "Proposal already executed");
-        require(block.timestamp > proposal.votingDeadline, "Voting period has not ended");
-
-        // Simple majority (more yes votes than no votes) to execute proposal
-        if (proposal.yesVotes > proposal.noVotes) {
-            // Execute proposal logic here
-            proposal.executed = true;
-            emit ProposalExecuted(_proposalId);
-        } else {
-            emit ProposalRejected(_proposalId);
-        }
+    // Function to retrieve the balance of KTY tokens held by this contract
+    function getKTYBalance() public view returns (uint256) {
+        return ktyToken.balanceOf(address(this));
     }
-
-    event ProposalCreated(uint256 indexed proposalId, address indexed creator, string description, uint256 votingDeadline);
-    event VoteCasted(uint256 indexed proposalId, address indexed voter, bool supportsProposal);
-    event ProposalExecuted(uint256 indexed proposalId);
-    event ProposalRejected(uint256 indexed proposalId);
 }

@@ -25,7 +25,10 @@ body {
 
 h1 {
   font-size: 80px;
-  /* Corrected */
+}
+
+label{
+  font-size: 20px;
 }
 
 @layer utilities {
