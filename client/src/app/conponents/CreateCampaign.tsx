@@ -1,5 +1,4 @@
 import { ChangeEvent, useState } from "react";
-
 export function CreateCampaign() {
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({

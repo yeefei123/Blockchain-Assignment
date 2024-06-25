@@ -4,11 +4,8 @@ import "./globals.css";
 
 import { cookieToInitialState } from "wagmi";
 
-import Web3ModalProvider from "@/context/web3";
-import { config } from "@/utils/web3";
-
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import Web3ModalProvider from "@/context";
+import { config } from "./config";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -27,7 +24,6 @@ export default function RootLayout({
         <Web3ModalProvider initialState={initialState}>
           {children}
         </Web3ModalProvider>
-        <ToastContainer />
       </body>
     </html>
   );
