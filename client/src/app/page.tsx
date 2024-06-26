@@ -1,9 +1,9 @@
 "use client";
 
 import { print } from "@/utils/toast";
-import { CreateCampaign } from "./conponents/CreateCampaign";
-import { Footer } from "./conponents/Footer";
-import { Header } from "./conponents/Header";
+import { CreateCampaign } from "./components/CreateCampaign";
+import { Footer } from "./components/Footer";
+import { Header } from "./components/Header";
 export default function Home() {
   const notify = () => {
     print("Hello World", "success");
