@@ -1,7 +1,11 @@
+"use client";
+
+import { ethers } from "ethers";
 import { ChangeEvent, useState } from "react";
+import Crowdfunding from "../../abi/Crowdfunding.json";
+
 export function CreateCampaign() {
   const [isLoading, setIsLoading] = useState(false);
-
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -18,11 +22,61 @@ export function CreateCampaign() {
     setForm({ ...form, [fieldName]: e.target.value });
   };
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    // Implement form submission logic here
-    console.log("Form submitted:", form);
-    // Example: Call API to create campaign
+    setIsLoading(true);
+
+    try {
+      // Check if MetaMask is installed
+      if (!window.ethereum) {
+        alert("Please install MetaMask");
+        setIsLoading(false);
+        return;
+      }
+
+      // Request account access
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+
+      // Initialize ethers.js
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      // Contract address of the deployed Crowdfunding contract
+      const contractAddress = "0xa0876C0BaBa010b3Bc1d22746d374089793DFD26";
+      const contract = new ethers.Contract(
+        contractAddress,
+        Crowdfunding.abi,
+        signer
+      );
+
+      // Prepare the data
+      const title = form.title;
+      const description = form.description;
+      const target = ethers.utils.parseUnits(form.target, 18); // Adjust based on your token's decimals
+      const deadline = Math.floor(new Date(form.endDate).getTime() / 1000);
+      const image = form.image;
+
+      // Call createCampaign function
+      const transaction = await contract.createCampaign(
+        await signer.getAddress(), // _owner
+        title,
+        description,
+        target,
+        deadline,
+        image
+      );
+
+      // Wait for the transaction to be mined
+      await transaction.wait();
+
+      console.log("Campaign created:", transaction);
+      alert("Campaign created successfully!");
+    } catch (error) {
+      console.error("Error creating campaign:", error);
+      alert("There was an error creating the campaign.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -31,7 +85,7 @@ export function CreateCampaign() {
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col w-3/4  bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+        className="flex flex-col w-3/4 bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
       >
         <div className="mb-4">
           <label htmlFor="title" className="block text-gray-700 font-bold mb-2">
@@ -70,7 +124,7 @@ export function CreateCampaign() {
         <div className="mb-4">
           <label
             htmlFor="target"
-            className="block text-gray-700  font-bold mb-2"
+            className="block text-gray-700 font-bold mb-2"
           >
             Target Amount
           </label>
