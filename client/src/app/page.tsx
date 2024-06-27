@@ -1,10 +1,14 @@
 import { print } from "@/utils/toast";
-import { CreateCampaign } from "./components/CreateCampaign";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { Navbar } from "./components/Navbar";
+import CreateCampaignPage from "./create-campaign/page";
 
-export default function Home() {
+export default function Home({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   const notify = () => {
     print("Hello World", "success");
   };
@@ -12,10 +16,10 @@ export default function Home() {
   return (
     <>
       <div className="flex flex-col min-h-screen font-sans">
-        <Header />
-        <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8">
-          <CreateCampaign />
+          <Header />
+          <Navbar />
+          {children || <CreateCampaignPage />}
         </main>
         <Footer />
       </div>
