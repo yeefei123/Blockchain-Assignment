@@ -9,17 +9,14 @@ export function CreateCampaign() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    target: "",
-    startDate: "",
-    endDate: "",
+    milestones: "",
     images: "",
   });
 
   const [errors, setErrors] = useState({
     title: "",
     description: "",
-    target: "",
-    endDate: "",
+    milestones: "",
     images: "",
   });
 
@@ -39,8 +36,7 @@ export function CreateCampaign() {
     const newErrors = {
       title: "",
       description: "",
-      target: "",
-      endDate: "",
+      milestones: "",
       images: "",
     };
 
@@ -53,24 +49,24 @@ export function CreateCampaign() {
       valid = false;
     }
     if (
-      !form.target.trim() ||
-      isNaN(Number(form.target)) ||
-      Number(form.target) <= 0
+      !form.milestones.trim() ||
+      isNaN(Number(form.milestones)) ||
+      Number(form.milestones) <= 0
     ) {
-      newErrors.target = "Valid target amount is required";
+      newErrors.milestones = "Valid number of milestones is required";
       valid = false;
     }
-    if (!form.endDate) {
-      newErrors.endDate = "End Date is required";
-      valid = false;
-    } else {
-      const endDate = new Date(form.endDate);
-      const today = new Date();
-      if (endDate <= today) {
-        newErrors.endDate = "End Date must be in the future";
-        valid = false;
-      }
-    }
+    // if (!form.endDate) {
+    //   newErrors.endDate = "End Date is required";
+    //   valid = false;
+    // } else {
+    //   const endDate = new Date(form.endDate);
+    //   const today = new Date();
+    //   if (endDate <= today) {
+    //     newErrors.endDate = "End Date must be in the future";
+    //     valid = false;
+    //   }
+    // }
     if (!form.images.trim() || !isValidUrl(form.images.trim())) {
       newErrors.images = "Valid image URL is required";
       valid = false;
@@ -124,8 +120,9 @@ export function CreateCampaign() {
       // Prepare the data
       const title = form.title;
       const description = form.description;
-      const target = ethers.utils.parseUnits(form.target, 18); // Adjust based on your token's decimals
-      const deadline = Math.floor(new Date(form.endDate).getTime() / 1000);
+      // const target = ethers.utils.parseUnits(form.target, 18); // Adjust based on your token's decimals
+      const milestones = form.milestones;
+      // const deadline = Math.floor(new Date(form.endDate).getTime() / 1000);
       const images = form.images;
 
       // Call createCampaign function
@@ -133,8 +130,9 @@ export function CreateCampaign() {
         await signer.getAddress(), // _owner
         title,
         description,
-        target,
-        deadline,
+        milestones,
+        // target,
+        // deadline,
         images
       );
 
@@ -204,7 +202,7 @@ export function CreateCampaign() {
           )}
         </div>
 
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <label htmlFor="target" className="block text-white font-bold mb-2">
             Target Amount (in ETH)
           </label>
@@ -223,7 +221,7 @@ export function CreateCampaign() {
           {errors.target && (
             <p className="text-red-500 text-xs italic">{errors.target}</p>
           )}
-        </div>
+        </div> */}
 
         {/* <div className="mb-4">
           <label
@@ -247,6 +245,30 @@ export function CreateCampaign() {
             <p className="text-red-500 text-xs italic">{errors.endDate}</p>
           )}
         </div> */}
+
+        <div className="mb-4">
+          <label
+            htmlFor="milestones"
+            className="block text-white font-bold mb-2"
+          >
+            Number of milestones
+          </label>
+          <input
+            type="number"
+            name="milestones"
+            id="milestones"
+            required
+            value={form.milestones}
+            onChange={(e) => handleFormFieldChange("target", e)}
+            placeholder="Enter your milestone amount here..."
+            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
+              errors.milestones && "border-red-500"
+            }`}
+          />
+          {errors.milestones && (
+            <p className="text-red-500 text-xs italic">{errors.milestones}</p>
+          )}
+        </div>
 
         <div className="mb-4">
           <label htmlFor="images" className="block text-white font-bold mb-2">
