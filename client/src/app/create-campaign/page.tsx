@@ -1,9 +1,13 @@
+// src/app/create-campaign.tsx
+
 "use client";
 
+import { FormContext } from "@/context/FormContext";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useContext, useState } from "react";
 
 export default function CreateCampaignPage() {
+  const { setCampaignData } = useContext(FormContext);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -81,8 +85,8 @@ export default function CreateCampaignPage() {
       return;
     }
     setLoading(true);
-    const query = new URLSearchParams(form).toString();
-    router.push(`/create-milestones?${query}`);
+    setCampaignData(form);
+    router.push("/create-milestones");
   };
 
   return (
