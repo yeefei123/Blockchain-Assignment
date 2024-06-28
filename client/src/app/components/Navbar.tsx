@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Navbar() {
   return (
-    <div className="bg-gray-800 py-4">
+    <div className="bg-gray-800 py-4 mb-5">
       <div className="container mx-auto flex items-center justify-between ml-5">
         <ul className="flex space-x-10 text-white">
           <li>

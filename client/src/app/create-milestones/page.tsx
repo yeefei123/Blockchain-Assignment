@@ -11,6 +11,14 @@ const CreateMilestonesPage = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const milestonesCount = parseInt(campaignData.milestones, 10);
 
+  const [errors, setErrors] = useState({
+    title: "",
+    description: "",
+    amount: "",
+    startDate: "",
+    endDate: "",
+  });
+
   const [localMilestones, setLocalMilestones] = useState(() =>
     milestonesData.length > 0
       ? milestonesData
@@ -78,7 +86,7 @@ const CreateMilestonesPage = () => {
       errors.endDate = "End Date is required";
       valid = false;
     }
-
+    setErrors(errors);
     return { valid, errors };
   };
 
@@ -120,8 +128,13 @@ const CreateMilestonesPage = () => {
             value={localMilestones[currentStep]?.title || ""}
             onChange={(e) => handleFormFieldChange("title", e.target.value)}
             placeholder="Enter milestone title"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
+              errors.title && "border-red-500"
+            }`}
           />
+          {errors.title && (
+            <p className="text-red-500 text-xs italic">{errors.title}</p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -138,8 +151,13 @@ const CreateMilestonesPage = () => {
               handleFormFieldChange("description", e.target.value)
             }
             placeholder="Enter milestone description"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
+              errors.description && "border-red-500"
+            }`}
           />
+          {errors.description && (
+            <p className="text-red-500 text-xs italic">{errors.description}</p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -152,8 +170,13 @@ const CreateMilestonesPage = () => {
             value={localMilestones[currentStep]?.amount || ""}
             onChange={(e) => handleFormFieldChange("amount", e.target.value)}
             placeholder="Enter target amount"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
+              errors.amount && "border-red-500"
+            }`}
           />
+          {errors.amount && (
+            <p className="text-red-500 text-xs italic">{errors.amount}</p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -168,8 +191,13 @@ const CreateMilestonesPage = () => {
             id="startDate"
             value={localMilestones[currentStep]?.startDate || ""}
             onChange={(e) => handleFormFieldChange("startDate", e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
+              errors.startDate && "border-red-500"
+            }`}
           />
+          {errors.startDate && (
+            <p className="text-red-500 text-xs italic">{errors.startDate}</p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -181,8 +209,13 @@ const CreateMilestonesPage = () => {
             id="endDate"
             value={localMilestones[currentStep]?.endDate || ""}
             onChange={(e) => handleFormFieldChange("endDate", e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
+              errors.endDate && "border-red-500"
+            }`}
           />
+          {errors.endDate && (
+            <p className="text-red-500 text-xs italic">{errors.endDate}</p>
+          )}
         </div>
 
         {/* Navigation Buttons */}
@@ -191,7 +224,7 @@ const CreateMilestonesPage = () => {
             <button
               type="button"
               onClick={handlePrev}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-20 rounded focus:outline-none focus:shadow-outline"
             >
               Previous
             </button>
@@ -200,7 +233,7 @@ const CreateMilestonesPage = () => {
           <button
             type="button"
             onClick={handleNext}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-20 rounded focus:outline-none focus:shadow-outline"
           >
             {currentStep < milestonesCount - 1 ? "Next" : "Submit"}
           </button>

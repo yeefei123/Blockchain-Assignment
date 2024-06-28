@@ -3,7 +3,13 @@ import { FormContext } from "@/context/FormContext";
 import { ethers } from "ethers";
 import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
+import Web3Modal from "web3modal";
 import Crowdfunding from "../../abi/Crowdfunding.json";
+
+const web3Modal = new Web3Modal({
+  cacheProvider: true, // optional
+  providerOptions: {}, // add any additional providers here
+});
 
 export default function SummaryPage() {
   const { campaignData, milestonesData } = useContext(FormContext);
@@ -28,70 +34,78 @@ export default function SummaryPage() {
       "Please check the campaign details carefully before submitting your campaign."
     );
 
-    if (confirmed) {
-      setLoading(true);
+    if (!confirmed) {
+      return; // If not confirmed, do nothing
+    }
 
-      // Check if MetaMask is installed
+    setLoading(true);
+
+    try {
+      const web3 = await web3Modal.connect();
+
+      // Check if MetaMask is installed and connected
       if (!window.ethereum) {
         alert("Please install MetaMask");
         setLoading(false);
         return;
       }
 
-      try {
-        // Request account access
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-
-        // Initialize ethers.js
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-
-        const contractAddress =
-          process.env.NEXT_PUBLIC_CROWDFUNDING_CONTRACT_ADDRESS;
-
-        if (!contractAddress) {
-          console.error("Crowdfunding contract address is not defined.");
-          setLoading(false);
-          return;
-        }
-
-        const contract = new ethers.Contract(
-          contractAddress,
-          Crowdfunding.abi,
-          signer
-        );
-
-        // Prepare milestones data
-        const milestones = localMilestones.map((milestone, index) => ({
-          id: index,
-          campaignId: 0, // This will be set in the contract
-          milestonetitle: milestone.title,
-          milestonedescription: milestone.description,
-          targetAmt: ethers.utils.parseEther(milestone.amount),
-          startDate: new Date(milestone.startDate).getTime(),
-          endDate: new Date(milestone.endDate).getTime(),
-        }));
-
-        // Assuming milestones are passed as an array
-        const createCampaignTx = await contract.createCampaign(
-          campaignData.title,
-          campaignData.desc,
-          milestonesCount,
-          campaignData.images,
-          milestones
-        );
-
-        // Wait for the transaction to be mined
-        await createCampaignTx.wait();
-
-        alert("Campaign created successfully!");
-        router.push("/create-campaign");
-      } catch (error) {
-        console.error("Error creating campaign:", error);
-        alert("Failed to create campaign. Please try again.");
-      } finally {
+      if (!window.ethereum.isConnected()) {
+        alert("Please connect your wallet.");
         setLoading(false);
+        return;
       }
+
+      // Initialize ethers.js
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      const contractAddress =
+        process.env.NEXT_PUBLIC_CROWDFUNDING_CONTRACT_ADDRESS;
+
+      if (!contractAddress) {
+        console.error("Crowdfunding contract address is not defined.");
+        setLoading(false);
+        return;
+      }
+
+      const contract = new ethers.Contract(
+        contractAddress,
+        Crowdfunding.abi,
+        signer
+      );
+
+      // Prepare milestones data
+      const milestones = localMilestones.map((milestone, index) => ({
+        id: index,
+        campaignId: 0, // This will be set in the contract
+        milestonetitle: milestone.title,
+        milestonedescription: milestone.description,
+        targetAmt: ethers.utils.parseEther(milestone.amount),
+        startDate: new Date(milestone.startDate).getTime(),
+        endDate: new Date(milestone.endDate).getTime(),
+      }));
+
+      // Assuming milestones are passed as an array
+      const createCampaignTx = await contract.createCampaign(
+        campaignData.title,
+        campaignData.desc,
+        milestonesCount,
+        campaignData.images,
+        milestones
+      );
+
+      // Wait for the transaction to be mined
+      await createCampaignTx.wait();
+
+      alert("Campaign created successfully!");
+      // Reset form data or navigate to another page
+      router.push("/create-campaign");
+    } catch (error) {
+      console.error("Error creating campaign:", error);
+      alert("Failed to create campaign. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,7 +158,7 @@ export default function SummaryPage() {
         <button
           type="button"
           onClick={handleSubmit}
-          className="bg-blue-500 mb-5 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          className="bg-blue-500 mb-5 hover:bg-gray-700 text-white font-bold py-2 px-20 rounded focus:outline-none focus:shadow-outline"
         >
           Submit
         </button>
@@ -153,7 +167,7 @@ export default function SummaryPage() {
       {isLoading && (
         <div className="mt-2 mb-5 flex justify-center items-center">
           <svg
-            className="animate-spin h-5 w-5 text-gray-500"
+            className="animate-spin h-5 w-20 text-gray-500"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"

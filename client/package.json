@@ -23,7 +23,8 @@
     "viem": "^2.16.2",
     "view": "^1.1.1",
     "wagmi": "^2.10.6",
-    "web3": "^4.10.0"
+    "web3": "^4.10.0",
+    "web3modal": "^1.9.12"
   },
   "devDependencies": {
     "@types/node": "^20",
