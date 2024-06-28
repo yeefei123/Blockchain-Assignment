@@ -1,9 +1,99 @@
 "use client";
 import { FormContext } from "@/context/FormContext";
-import { useContext } from "react";
+import { ethers } from "ethers";
+import { useRouter } from "next/navigation";
+import { useContext, useState } from "react";
+import Crowdfunding from "../../abi/Crowdfunding.json";
 
 export default function SummaryPage() {
   const { campaignData, milestonesData } = useContext(FormContext);
+  const milestonesCount = parseInt(campaignData.milestones, 10);
+  const [isLoading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const [localMilestones, setLocalMilestones] = useState(() =>
+    milestonesData.length > 0
+      ? milestonesData
+      : Array.from({ length: milestonesCount }, () => ({
+          title: "",
+          description: "",
+          amount: "",
+          startDate: "",
+          endDate: "",
+        }))
+  );
+
+  const handleSubmit = async () => {
+    const confirmed = window.confirm(
+      "Please check the campaign details carefully before submitting your campaign."
+    );
+
+    if (confirmed) {
+      setLoading(true);
+
+      // Check if MetaMask is installed
+      if (!window.ethereum) {
+        alert("Please install MetaMask");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Request account access
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        // Initialize ethers.js
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+
+        const contractAddress =
+          process.env.NEXT_PUBLIC_CROWDFUNDING_CONTRACT_ADDRESS;
+
+        if (!contractAddress) {
+          console.error("Crowdfunding contract address is not defined.");
+          setLoading(false);
+          return;
+        }
+
+        const contract = new ethers.Contract(
+          contractAddress,
+          Crowdfunding.abi,
+          signer
+        );
+
+        // Prepare milestones data
+        const milestones = localMilestones.map((milestone, index) => ({
+          id: index,
+          campaignId: 0, // This will be set in the contract
+          milestonetitle: milestone.title,
+          milestonedescription: milestone.description,
+          targetAmt: ethers.utils.parseEther(milestone.amount),
+          startDate: new Date(milestone.startDate).getTime(),
+          endDate: new Date(milestone.endDate).getTime(),
+        }));
+
+        // Assuming milestones are passed as an array
+        const createCampaignTx = await contract.createCampaign(
+          campaignData.title,
+          campaignData.desc,
+          milestonesCount,
+          campaignData.images,
+          milestones
+        );
+
+        // Wait for the transaction to be mined
+        await createCampaignTx.wait();
+
+        alert("Campaign created successfully!");
+        router.push("/create-campaign");
+      } catch (error) {
+        console.error("Error creating campaign:", error);
+        alert("Failed to create campaign. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen">
@@ -49,6 +139,42 @@ export default function SummaryPage() {
           </div>
         ))}
       </div>
+
+      {!isLoading && (
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="bg-blue-500 mb-5 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >
+          Submit
+        </button>
+      )}
+
+      {isLoading && (
+        <div className="mt-2 mb-5 flex justify-center items-center">
+          <svg
+            className="animate-spin h-5 w-5 text-gray-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8H4z"
+            ></path>
+          </svg>
+          <span className="ml-2 text-gray-500 font-bold">Loading...</span>
+        </div>
+      )}
     </div>
   );
 }

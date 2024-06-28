@@ -2,13 +2,14 @@
 
 import { FormContext } from "@/context/FormContext";
 import { useRouter } from "next/navigation";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 const CreateMilestonesPage = () => {
   const router = useRouter();
-  const { milestonesData, setMilestonesData } = useContext(FormContext);
+  const { milestonesData, setMilestonesData, campaignData } =
+    useContext(FormContext);
   const [currentStep, setCurrentStep] = useState(0);
-  const milestonesCount = 3; // Assuming you want to create 3 milestones
+  const milestonesCount = parseInt(campaignData.milestones, 10);
 
   const [localMilestones, setLocalMilestones] = useState(() =>
     milestonesData.length > 0
@@ -22,7 +23,25 @@ const CreateMilestonesPage = () => {
         }))
   );
 
-  const handleFormFieldChange = (fieldName, value) => {
+  useEffect(() => {
+    if (localMilestones.length < milestonesCount) {
+      setLocalMilestones(
+        Array.from(
+          { length: milestonesCount },
+          (v, i) =>
+            localMilestones[i] || {
+              title: "",
+              description: "",
+              amount: "",
+              startDate: "",
+              endDate: "",
+            }
+        )
+      );
+    }
+  }, [milestonesCount, localMilestones]);
+
+  const handleFormFieldChange = (fieldName: string, value: string) => {
     const newMilestones = [...localMilestones];
     newMilestones[currentStep][fieldName] = value;
     setLocalMilestones(newMilestones);
@@ -39,23 +58,23 @@ const CreateMilestonesPage = () => {
     };
     let valid = true;
 
-    if (!milestone.title.trim()) {
+    if (!milestone?.title?.trim()) {
       errors.title = "Milestone Title is required";
       valid = false;
     }
-    if (!milestone.description.trim()) {
+    if (!milestone?.description?.trim()) {
       errors.description = "Milestone Description is required";
       valid = false;
     }
-    if (!milestone.amount.trim() || isNaN(Number(milestone.amount))) {
+    if (!milestone?.amount?.trim() || isNaN(Number(milestone.amount))) {
       errors.amount = "Valid Target Amount (in ETH) is required";
       valid = false;
     }
-    if (!milestone.startDate.trim()) {
+    if (!milestone?.startDate?.trim()) {
       errors.startDate = "Start Date is required";
       valid = false;
     }
-    if (!milestone.endDate.trim()) {
+    if (!milestone?.endDate?.trim()) {
       errors.endDate = "End Date is required";
       valid = false;
     }
@@ -66,6 +85,7 @@ const CreateMilestonesPage = () => {
   const handleNext = () => {
     const { valid, errors } = validateStep();
     if (!valid) {
+      console.log(errors);
       return;
     }
     if (currentStep < milestonesCount - 1) {
@@ -97,7 +117,7 @@ const CreateMilestonesPage = () => {
           <input
             type="text"
             id="title"
-            value={localMilestones[currentStep].title}
+            value={localMilestones[currentStep]?.title || ""}
             onChange={(e) => handleFormFieldChange("title", e.target.value)}
             placeholder="Enter milestone title"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -113,7 +133,7 @@ const CreateMilestonesPage = () => {
           </label>
           <textarea
             id="description"
-            value={localMilestones[currentStep].description}
+            value={localMilestones[currentStep]?.description || ""}
             onChange={(e) =>
               handleFormFieldChange("description", e.target.value)
             }
@@ -129,7 +149,7 @@ const CreateMilestonesPage = () => {
           <input
             type="number"
             id="amount"
-            value={localMilestones[currentStep].amount}
+            value={localMilestones[currentStep]?.amount || ""}
             onChange={(e) => handleFormFieldChange("amount", e.target.value)}
             placeholder="Enter target amount"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -146,7 +166,7 @@ const CreateMilestonesPage = () => {
           <input
             type="date"
             id="startDate"
-            value={localMilestones[currentStep].startDate}
+            value={localMilestones[currentStep]?.startDate || ""}
             onChange={(e) => handleFormFieldChange("startDate", e.target.value)}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
@@ -159,7 +179,7 @@ const CreateMilestonesPage = () => {
           <input
             type="date"
             id="endDate"
-            value={localMilestones[currentStep].endDate}
+            value={localMilestones[currentStep]?.endDate || ""}
             onChange={(e) => handleFormFieldChange("endDate", e.target.value)}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
