@@ -1,29 +1,16 @@
-// src/app/create-milestones.tsx
-
 "use client";
 
 import { FormContext } from "@/context/FormContext";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 
-type MilestoneData = {
-  [key: string]: string | number;
-} & {
-  title: string;
-  description: string;
-  amount: string;
-  startDate: string;
-  endDate: string;
-};
-
-export default function CreateMilestonesPage() {
-  const searchParams = useSearchParams();
-  const milestonesCount = Number(searchParams?.get("milestones") || 1);
+const CreateMilestonesPage = () => {
   const router = useRouter();
-
   const { milestonesData, setMilestonesData } = useContext(FormContext);
   const [currentStep, setCurrentStep] = useState(0);
-  const [localMilestones, setLocalMilestones] = useState(
+  const milestonesCount = 3; // Assuming you want to create 3 milestones
+
+  const [localMilestones, setLocalMilestones] = useState(() =>
     milestonesData.length > 0
       ? milestonesData
       : Array.from({ length: milestonesCount }, () => ({
@@ -35,13 +22,9 @@ export default function CreateMilestonesPage() {
         }))
   );
 
-  const handleFormFieldChange = (
-    index: number,
-    fieldName: string,
-    value: string
-  ) => {
+  const handleFormFieldChange = (fieldName, value) => {
     const newMilestones = [...localMilestones];
-    newMilestones[index][fieldName] = value;
+    newMilestones[currentStep][fieldName] = value;
     setLocalMilestones(newMilestones);
   };
 
@@ -83,7 +66,6 @@ export default function CreateMilestonesPage() {
   const handleNext = () => {
     const { valid, errors } = validateStep();
     if (!valid) {
-      // Handle errors (you could use state to show error messages)
       return;
     }
     if (currentStep < milestonesCount - 1) {
@@ -102,11 +84,12 @@ export default function CreateMilestonesPage() {
 
   return (
     <div className="flex flex-col items-center min-h-screen">
-      <h1 className="text-4xl font-bold mb-6 black">Create Milestones</h1>
+      <h1 className="text-4xl font-bold mb-6 text-black">Create Milestones</h1>
       <form
         onSubmit={(e) => e.preventDefault()}
         className="flex flex-col w-3/4 bg-black shadow-md rounded px-8 pt-6 pb-8 mb-4"
       >
+        {/* Milestone Form Fields */}
         <div className="mb-4">
           <label htmlFor="title" className="block text-white font-bold mb-2">
             Milestone Title
@@ -115,9 +98,7 @@ export default function CreateMilestonesPage() {
             type="text"
             id="title"
             value={localMilestones[currentStep].title}
-            onChange={(e) =>
-              handleFormFieldChange(currentStep, "title", e.target.value)
-            }
+            onChange={(e) => handleFormFieldChange("title", e.target.value)}
             placeholder="Enter milestone title"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
@@ -134,7 +115,7 @@ export default function CreateMilestonesPage() {
             id="description"
             value={localMilestones[currentStep].description}
             onChange={(e) =>
-              handleFormFieldChange(currentStep, "description", e.target.value)
+              handleFormFieldChange("description", e.target.value)
             }
             placeholder="Enter milestone description"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -149,9 +130,7 @@ export default function CreateMilestonesPage() {
             type="number"
             id="amount"
             value={localMilestones[currentStep].amount}
-            onChange={(e) =>
-              handleFormFieldChange(currentStep, "amount", e.target.value)
-            }
+            onChange={(e) => handleFormFieldChange("amount", e.target.value)}
             placeholder="Enter target amount"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
@@ -168,9 +147,7 @@ export default function CreateMilestonesPage() {
             type="date"
             id="startDate"
             value={localMilestones[currentStep].startDate}
-            onChange={(e) =>
-              handleFormFieldChange(currentStep, "startDate", e.target.value)
-            }
+            onChange={(e) => handleFormFieldChange("startDate", e.target.value)}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
         </div>
@@ -183,13 +160,12 @@ export default function CreateMilestonesPage() {
             type="date"
             id="endDate"
             value={localMilestones[currentStep].endDate}
-            onChange={(e) =>
-              handleFormFieldChange(currentStep, "endDate", e.target.value)
-            }
+            onChange={(e) => handleFormFieldChange("endDate", e.target.value)}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
         </div>
 
+        {/* Navigation Buttons */}
         <div className="flex justify-between">
           {currentStep > 0 && (
             <button
@@ -200,6 +176,7 @@ export default function CreateMilestonesPage() {
               Previous
             </button>
           )}
+
           <button
             type="button"
             onClick={handleNext}
@@ -211,4 +188,6 @@ export default function CreateMilestonesPage() {
       </form>
     </div>
   );
-}
+};
+
+export default CreateMilestonesPage;

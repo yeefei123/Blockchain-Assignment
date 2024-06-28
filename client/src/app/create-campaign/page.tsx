@@ -1,5 +1,3 @@
-// src/app/create-campaign.tsx
-
 "use client";
 
 import { FormContext } from "@/context/FormContext";
